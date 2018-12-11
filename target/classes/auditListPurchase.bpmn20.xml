@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:tns="http://www.activiti.org/test" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" expressionLanguage="http://www.w3.org/1999/XPath" id="m1516329136940" name="" targetNamespace="http://www.activiti.org/test" typeLanguage="http://www.w3.org/2001/XMLSchema">
+  <process id="auditListPurchase" isClosed="false" isExecutable="true" name="auditListPurchase" processType="None">
+    <startEvent id="auditListPurchaseStartEvent" name="开始"/>
+    <endEvent id="auditListPurchaseProcessEndEvent" name="结束"/>
+    <userTask activiti:assignee="${startUser}" activiti:exclusive="true" id="startUser" name="提交采购需求">
+      <extensionElements>
+        <activiti:taskListener class="com.sjgtw.business.service.workflow.ApprovalUserTaskListener" event="create">
+          <activiti:field name="passSendFlag">
+            <activiti:string>0</activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <receiveTask activiti:exclusive="true" id="distributionPricing" name="配货定价"/>
+    <userTask activiti:assignee="${priceApproval}" activiti:exclusive="true" id="priceApproval" name="审核价格">
+      <extensionElements>
+        <activiti:taskListener class="com.sjgtw.business.service.workflow.ApprovalUserTaskListener" event="create">
+          <activiti:field name="passSendFlag">
+            <activiti:string>1</activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <userTask activiti:assignee="${auditMaterial}" activiti:exclusive="true" id="auditMaterial" name="物机部长审核">
+      <extensionElements>
+        <activiti:taskListener class="com.sjgtw.business.service.workflow.ApprovalUserTaskListener" event="create">
+          <activiti:field name="passSendFlag">
+            <activiti:string>1</activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <userTask activiti:assignee="${auditPM}" activiti:exclusive="true" id="auditPM" name="项目经理审核">
+      <extensionElements>
+        <activiti:taskListener class="com.sjgtw.business.service.workflow.ApprovalUserTaskListener" event="create">
+          <activiti:field name="passSendFlag">
+            <activiti:string>1</activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <userTask activiti:assignee="${auditMaterial1}" activiti:exclusive="true" id="auditMaterial1" name="物设部负责人审核">
+      <extensionElements>
+        <activiti:taskListener class="com.sjgtw.business.service.workflow.ApprovalUserTaskListener" event="create">
+          <activiti:field name="passSendFlag">
+            <activiti:string>1</activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <userTask activiti:assignee="${auditMaterialManager}" activiti:exclusive="true" id="auditMaterialManager" name="物设部部长审核">
+      <extensionElements>
+        <activiti:taskListener class="com.sjgtw.business.service.workflow.ApprovalUserTaskListener" event="create">
+          <activiti:field name="passSendFlag">
+            <activiti:string>1</activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <userTask activiti:assignee="${auditMaterialMajor}" activiti:exclusive="true" id="auditMaterialMajor" name="分管副总审核">
+      <extensionElements>
+        <activiti:taskListener class="com.sjgtw.business.service.workflow.ApprovalUserTaskListener" event="create">
+          <activiti:field name="passSendFlag">
+            <activiti:string>1</activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="_18" name="通过" sourceRef="startUser" targetRef="updateListPurchase2Distribution">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <sequenceFlow id="_19" name="通过" sourceRef="auditPM" targetRef="auditMaterial1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 1}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_21" name="通过" sourceRef="auditMaterial1" targetRef="auditMaterialManager">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 1}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_22" name="通过" sourceRef="auditMaterialManager" targetRef="auditMaterialMajor">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 1}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_13" sourceRef="auditListPurchaseStartEvent" targetRef="startUser"/>
+    <scriptTask activiti:exclusive="true" id="updateListPurchase2Edit" name="更新状态为已驳回" scriptFormat="groovy">
+      <script><![CDATA[def listPurchaseService=com.gt.core.common.SpringContextUtil.getBean("listPurchaseServiceImpl");
+java.lang.Long businessId =  java.lang.Long.valueOf(businessId);
+java.lang.String userId = userId.toString();
+listPurchaseService.updateListPurchaseState(businessId, 5,com.gt.util.common.DateUtils.getDateStr(new Date()), userId);
+]]></script>
+    </scriptTask>
+    <sequenceFlow id="_17" name="驳回" sourceRef="auditMaterial" targetRef="updateListPurchase2Edit">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_23" name="驳回" sourceRef="auditPM" targetRef="updateListPurchase2Edit">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_24" sourceRef="updateListPurchase2Edit" targetRef="startUser"/>
+    <scriptTask activiti:exclusive="true" id="updateListPurchase2Distribution" name="更新状态为报价中" scriptFormat="groovy">
+      <script><![CDATA[def listPurchaseService=com.gt.core.common.SpringContextUtil.getBean("listPurchaseServiceImpl");
+java.lang.Long businessId =  java.lang.Long.valueOf(businessId);
+java.lang.String userId = userId.toString();
+listPurchaseService.updateListPurchaseState(businessId, 0,com.gt.util.common.DateUtils.getDateStr(new Date()), userId);
+]]></script>
+    </scriptTask>
+    <sequenceFlow id="_27" name="通过" sourceRef="auditMaterial" targetRef="auditPM">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 1}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_28" name="驳回" sourceRef="auditMaterial1" targetRef="updateListPurchase2Edit">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_29" name="驳回" sourceRef="auditMaterialManager" targetRef="updateListPurchase2Edit">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_30" name="驳回" sourceRef="auditMaterialMajor" targetRef="updateListPurchase2Edit">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_31" sourceRef="updateListPurchase2Distribution" targetRef="distributionPricing"/>
+    <scriptTask activiti:exclusive="true" id="updateListPurchase2Done" name="更新状态为已通过" scriptFormat="groovy">
+      <script><![CDATA[def listPurchaseService=com.gt.core.common.SpringContextUtil.getBean("listPurchaseServiceImpl");
+java.lang.Long businessId =  java.lang.Long.valueOf(businessId);
+java.lang.String userId = userId.toString();
+listPurchaseService.updateListPurchaseState(businessId, 1,com.gt.util.common.DateUtils.getDateStr(new Date()), userId);
+]]></script>
+    </scriptTask>
+    <sequenceFlow id="_33" name="通过" sourceRef="auditMaterialMajor" targetRef="updateListPurchase2Done">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 1}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_34" sourceRef="updateListPurchase2Done" targetRef="auditListPurchaseProcessEndEvent"/>
+    <sequenceFlow id="_3" sourceRef="distributionPricing" targetRef="priceApproval"/>
+    <sequenceFlow id="_4" name="通过" sourceRef="priceApproval" targetRef="auditMaterial">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 1&&rejectNode==""}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_2" name="驳回" sourceRef="priceApproval" targetRef="updateListPurchase2Distribution">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_5" name="通过" sourceRef="priceApproval" targetRef="auditPM">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 1&&rejectNode=="auditPM"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_6" name="通过" sourceRef="priceApproval" targetRef="auditMaterial1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 1&&rejectNode=="auditMaterial1"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_7" name="通过" sourceRef="priceApproval" targetRef="auditMaterialManager">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 1&&rejectNode=="auditMaterialManager"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="_8" name="通过" sourceRef="priceApproval" targetRef="auditMaterialMajor">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vote == 1&&rejectNode=="auditMaterialMajor"}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram documentation="background=#3C3F41;count=1;horizontalcount=1;orientation=0;width=842.4;height=1195.2;imageableWidth=832.4;imageableHeight=1185.2;imageableX=5.0;imageableY=5.0" id="Diagram-_1" name="New Diagram">
+    <bpmndi:BPMNPlane bpmnElement="auditListPurchase">
+      <bpmndi:BPMNShape bpmnElement="auditListPurchaseStartEvent" id="Shape-auditListPurchaseStartEvent">
+        <omgdc:Bounds height="32.0" width="32.0" x="115.0" y="150.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.0" width="32.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="auditListPurchaseProcessEndEvent" id="Shape-auditListPurchaseProcessEndEvent">
+        <omgdc:Bounds height="32.0" width="32.0" x="1095.0" y="710.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.0" width="32.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startUser" id="Shape-startUser">
+        <omgdc:Bounds height="55.0" width="85.0" x="250.0" y="140.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="auditPM" id="Shape-auditPM">
+        <omgdc:Bounds height="55.0" width="85.0" x="880.0" y="280.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="auditMaterial" id="Shape-auditMaterial">
+        <omgdc:Bounds height="55.0" width="85.0" x="880.0" y="170.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="distributionPricing" id="Shape-distributionPricing">
+        <omgdc:Bounds height="55.0" width="85.0" x="645.0" y="25.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="auditMaterial1" id="Shape-auditMaterial1">
+        <omgdc:Bounds height="55.0" width="85.0" x="880.0" y="390.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="auditMaterialManager" id="Shape-auditMaterialManager">
+        <omgdc:Bounds height="55.0" width="85.0" x="875.0" y="485.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="auditMaterialMajor" id="Shape-auditMaterialMajor">
+        <omgdc:Bounds height="55.0" width="85.0" x="880.0" y="590.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="updateListPurchase2Edit" id="Shape-updateListPurchase2Edit">
+        <omgdc:Bounds height="55.0" width="85.0" x="250.0" y="350.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="updateListPurchase2Distribution" id="Shape-updateListPurchase2Distribution">
+        <omgdc:Bounds height="55.0" width="85.0" x="430.0" y="30.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="updateListPurchase2Done" id="Shape-updateListPurchase2Done">
+        <omgdc:Bounds height="55.0" width="85.0" x="880.0" y="710.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="priceApproval" id="Shape-priceApproval">
+        <omgdc:Bounds height="55.0" width="85.0" x="880.0" y="75.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="_13" id="BPMNEdge__13" sourceElement="auditListPurchaseStartEvent" targetElement="startUser">
+        <omgdi:waypoint x="161.7408522978788" y="170.0"/>
+        <omgdi:waypoint x="200.0" y="170.0"/>
+        <omgdi:waypoint x="250.0" y="170.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_34" id="BPMNEdge__34" sourceElement="updateListPurchase2Done" targetElement="auditListPurchaseProcessEndEvent">
+        <omgdi:waypoint x="980.0" y="737.5"/>
+        <omgdi:waypoint x="1095.0" y="726.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_17" id="BPMNEdge__17" sourceElement="auditMaterial" targetElement="updateListPurchase2Edit">
+        <omgdi:waypoint x="865.0" y="197.5"/>
+        <omgdi:waypoint x="545.0" y="380.0"/>
+        <omgdi:waypoint x="335.0" y="380.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_19" id="BPMNEdge__19" sourceElement="auditPM" targetElement="auditMaterial1">
+        <omgdi:waypoint x="920.0" y="350.0"/>
+        <omgdi:waypoint x="920.0" y="360.0"/>
+        <omgdi:waypoint x="920.0" y="390.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_18" id="BPMNEdge__18" sourceElement="startUser" targetElement="updateListPurchase2Distribution">
+        <omgdi:waypoint x="290.0" y="125.0"/>
+        <omgdi:waypoint x="290.0" y="55.0"/>
+        <omgdi:waypoint x="430.0" y="55.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_22" id="BPMNEdge__22" sourceElement="auditMaterialManager" targetElement="auditMaterialMajor">
+        <omgdi:waypoint x="920.0" y="555.0"/>
+        <omgdi:waypoint x="920.0" y="590.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_21" id="BPMNEdge__21" sourceElement="auditMaterial1" targetElement="auditMaterialManager">
+        <omgdi:waypoint x="920.0" y="460.0"/>
+        <omgdi:waypoint x="920.0" y="485.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_24" id="BPMNEdge__24" sourceElement="updateListPurchase2Edit" targetElement="startUser">
+        <omgdi:waypoint x="290.0" y="335.0"/>
+        <omgdi:waypoint x="290.0" y="355.0"/>
+        <omgdi:waypoint x="290.0" y="195.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_23" id="BPMNEdge__23" sourceElement="auditPM" targetElement="updateListPurchase2Edit">
+        <omgdi:waypoint x="865.0" y="307.5"/>
+        <omgdi:waypoint x="545.0" y="380.0"/>
+        <omgdi:waypoint x="335.0" y="380.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="8.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_28" id="BPMNEdge__28" sourceElement="auditMaterial1" targetElement="updateListPurchase2Edit">
+        <omgdi:waypoint x="865.0" y="440.0"/>
+        <omgdi:waypoint x="290.0" y="440.0"/>
+        <omgdi:waypoint x="290.0" y="405.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="1.0" x="0.0" y="-10.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_27" id="BPMNEdge__27" sourceElement="auditMaterial" targetElement="auditPM">
+        <omgdi:waypoint x="925.0" y="240.0"/>
+        <omgdi:waypoint x="925.0" y="225.0"/>
+        <omgdi:waypoint x="925.0" y="280.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_29" id="BPMNEdge__29" sourceElement="auditMaterialManager" targetElement="updateListPurchase2Edit">
+        <omgdi:waypoint x="860.0" y="515.0"/>
+        <omgdi:waypoint x="290.0" y="515.0"/>
+        <omgdi:waypoint x="290.0" y="405.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="10.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_2" id="BPMNEdge__2" sourceElement="priceApproval" targetElement="updateListPurchase2Distribution">
+        <omgdi:waypoint x="865.0" y="105.0"/>
+        <omgdi:waypoint x="470.0" y="105.0"/>
+        <omgdi:waypoint x="470.0" y="85.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="4.0" x="0.0" y="-5.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_3" id="BPMNEdge__3" sourceElement="distributionPricing" targetElement="priceApproval">
+        <omgdi:waypoint x="745.0" y="50.0"/>
+        <omgdi:waypoint x="920.0" y="50.0"/>
+        <omgdi:waypoint x="920.0" y="75.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_4" id="BPMNEdge__4" sourceElement="priceApproval" targetElement="auditMaterial">
+        <omgdi:waypoint x="922.5" y="145.0"/>
+        <omgdi:waypoint x="922.5" y="170.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_5" id="BPMNEdge__5" sourceElement="priceApproval" targetElement="auditPM">
+        <omgdi:waypoint x="980.0" y="102.5"/>
+        <omgdi:waypoint x="1095.0" y="195.0"/>
+        <omgdi:waypoint x="965.0" y="307.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="3.0" width="0.0" x="0.0" y="40.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_6" id="BPMNEdge__6" sourceElement="priceApproval" targetElement="auditMaterial1">
+        <omgdi:waypoint x="980.0" y="102.5"/>
+        <omgdi:waypoint x="1095.0" y="275.0"/>
+        <omgdi:waypoint x="965.0" y="417.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="78.0" width="0.0" x="0.0" y="55.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_7" id="BPMNEdge__7" sourceElement="priceApproval" targetElement="auditMaterialManager">
+        <omgdi:waypoint x="980.0" y="102.5"/>
+        <omgdi:waypoint x="1095.0" y="330.0"/>
+        <omgdi:waypoint x="960.0" y="512.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="143.0" width="0.0" x="0.0" y="50.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_8" id="BPMNEdge__8" sourceElement="priceApproval" targetElement="auditMaterialMajor">
+        <omgdi:waypoint x="980.0" y="102.5"/>
+        <omgdi:waypoint x="1095.0" y="375.0"/>
+        <omgdi:waypoint x="965.0" y="617.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="188.0" width="0.0" x="0.0" y="40.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_31" id="BPMNEdge__31" sourceElement="updateListPurchase2Distribution" targetElement="distributionPricing">
+        <omgdi:waypoint x="530.0" y="55.0"/>
+        <omgdi:waypoint x="545.0" y="55.0"/>
+        <omgdi:waypoint x="645.0" y="55.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_30" id="BPMNEdge__30" sourceElement="auditMaterialMajor" targetElement="updateListPurchase2Edit">
+        <omgdi:waypoint x="865.0" y="617.5"/>
+        <omgdi:waypoint x="290.0" y="505.0"/>
+        <omgdi:waypoint x="290.0" y="405.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_33" id="BPMNEdge__33" sourceElement="auditMaterialMajor" targetElement="updateListPurchase2Done">
+        <omgdi:waypoint x="920.0" y="660.0"/>
+        <omgdi:waypoint x="920.0" y="655.0"/>
+        <omgdi:waypoint x="920.0" y="710.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="5.0" width="0.0" x="0.0" y="-35.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

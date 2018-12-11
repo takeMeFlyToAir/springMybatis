@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:;base64,=">
+    <title></title>
+</head>
+<body>
+        <form id="file" enctype="multipart/form-data">
+            文件:<input type="file" name="file"/><input type="button" onclick="uploadFile('file');" value="上传"/>
+        </form>
+        文件路径为：<p id="filePath"></p>
+</body>
+</html>
+<script src="/js/jquery-1.11.3.min.js"></script>
+<script>
+function uploadFile(formId) {
+    var formData = new FormData($('#'+formId)[0]);
+    $.ajax({
+        type: 'POST',
+        url: '/file/upload',
+        data: formData,
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function(resp) {
+            console.log(resp);
+            $("#filePath").text(resp.result);
+        }
+    });
+}
+</script>

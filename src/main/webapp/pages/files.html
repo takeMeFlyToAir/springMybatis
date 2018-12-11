@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:;base64,=">
+    <title></title>
+</head>
+<body>
+    <div name="dropbox" id="dropbox" style="font-size:30px;color:#333333;background-color:#888888;min-width:300px;min-height:100px;border:3px dashed silver;">
+        <p style="line-height: 100px;">拖拽文件上传</p>
+    </div>
+    <div style="text-align: center; ">
+        <button class="button" type="submit" onclick="javascript:upload();">上传</button>
+    </div>
+    <div id="fileliststring" style="background-color:#cccccc;  color:#333333; ">
+    </div>
+    <hr>
+    <div id="fileList" style="background-color:#cccccc;  color:#333333; ">
+        <img src="/upload/1bd4b6ef-f08f-46d6-8f9b-ec75064a341c.jpg">
+    </div>
+</body>
+</html>
+<script src="/js/jquery-1.11.3.min.js"></script>
+<script>
+    var uploadFiles = new Array();
+    $(function(){
+        //阻止浏览器默认行为。
+        $(document).on({
+            dragleave:function(e){    //拖离
+                e.preventDefault();
+            },
+            drop:function(e){  //拖后放
+                e.preventDefault();
+            },
+            dragenter:function(e){    //拖进
+                e.preventDefault();
+            },
+            dragover:function(e){    //拖来拖去
+                e.preventDefault();
+            }
+        });
+
+        var box = document.getElementById('dropbox'); //拖拽区域
+
+        box.addEventListener("drop",function(e){
+            e.preventDefault(); //取消默认浏览器拖拽效果
+            var fileList = e.dataTransfer.files; //获取文件对象
+            //检测是否是拖拽文件到页面的操作
+            if(fileList.length == 0){
+                return false;
+            }
+            addFiles(fileList);
+        },false);
+    });
+    function addFiles(files){
+        var errstr = "";
+        for(var i=0; i< files.length; i++){
+            var filename = files[i].name;
+            var isfind = false;
+            for(var j=0; j< uploadFiles.length; j++){
+                if(uploadFiles[j].name == filename){
+                    isfind = true;
+                    break;
+                }
+            }
+
+            var index1=filename.lastIndexOf(".");
+            var index2=filename.length;
+            var postf=filename.substring(index1+1,index2);//后缀名
+            var myarray = new Array('JPG','jpg','jpeg','JPEG','gif','GIF','png','PNG');
+
+            if($.inArray(postf,myarray) == -1){
+                errstr += filename + "/";
+                continue;
+            }
+            if(isfind == false){
+                uploadFiles.push(files[i]);
+            }
+        }
+
+        if(errstr != ""){
+            alert("文件格式错误:"+errstr);
+        }
+
+        var fileliststring = "";
+
+        for(var j=0; j< uploadFiles.length; j++){
+            fileliststring += uploadFiles[j].name + " 大小:" + (uploadFiles[j].size / 1000) + "k" + "</br>";
+        }
+
+        document.getElementById("fileliststring").innerHTML=fileliststring;
+    }
+
+    function upload() {
+        addFiles(new Array());
+        if(uploadFiles.length <= 0){
+//            Refresh();
+            return;
+        }
+        var uploadCount = uploadFiles.length ;
+        for(var i = 0; i < uploadCount; i++){
+            var formData = new FormData();
+            formData.append("file", uploadFiles[0]);
+            uploadFiles.splice(0,1);
+            $.ajax({
+                type: 'POST',
+                url: '/file/upload',
+                data: formData,
+                cache: false,
+                processData: false,
+                contentType: false,
+                success: function(resp) {
+                    console.log(resp);
+                    $("#fileList").append("<img src='"+resp.result+"'>");
+                }
+            });
+        }
+    }
+</script>

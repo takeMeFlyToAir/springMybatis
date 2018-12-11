@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<definitions id="definitions"
+             targetNamespace="http://activiti.org/bpmn20"
+             xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:activiti="http://activiti.org/bpmn">
+
+    <!-- 定义流程  id是必选的，用于启动工作流，name是选填，用来描述 -->
+    <process id="exclusive" name="Monthly financial report reminder process">
+        <startEvent id="theStart"/>
+
+        <sequenceFlow id="flow1" sourceRef="theStart" targetRef="staffFill"/>
+
+        <userTask id="staffFill" name="staff fill">
+            <potentialOwner>
+                <resourceAssignmentExpression>
+                    <formalExpression>staff</formalExpression>
+                </resourceAssignmentExpression>
+            </potentialOwner>
+        </userTask>
+
+        <sequenceFlow id="flow2" sourceRef="staffFill" targetRef="exclusiveGw"/>
+
+        <exclusiveGateway id="exclusiveGw" name="Exclusive Gateway" />
+
+        <userTask id="caiwu" name="caiwu">
+            <potentialOwner>
+                <resourceAssignmentExpression>
+                    <formalExpression>caiwu</formalExpression>
+                </resourceAssignmentExpression>
+            </potentialOwner>
+        </userTask>
+
+        <sequenceFlow id="flow3" sourceRef="exclusiveGw" targetRef="caiwu">
+            <conditionExpression xsi:type="tFormalExpression"><![CDATA[${money<500 }]]></conditionExpression>
+        </sequenceFlow>
+
+        <userTask id="jingli" name="jingli">
+            <potentialOwner>
+                <resourceAssignmentExpression>
+                    <formalExpression>jingli</formalExpression>
+                </resourceAssignmentExpression>
+            </potentialOwner>
+        </userTask>
+
+        <sequenceFlow id="flow4" sourceRef="exclusiveGw" targetRef="jingli">
+            <conditionExpression xsi:type="tFormalExpression"><![CDATA[${money >= 500  && money<=1000 }]]></conditionExpression>
+        </sequenceFlow>
+
+        <userTask id="zonjingli" name="zonjingli">
+            <potentialOwner>
+                <resourceAssignmentExpression>
+                    <formalExpression>zonjingli</formalExpression>
+                </resourceAssignmentExpression>
+            </potentialOwner>
+        </userTask>
+
+        <sequenceFlow id="flow5" sourceRef="exclusiveGw" targetRef="zonjingli">
+            <conditionExpression xsi:type="tFormalExpression"><![CDATA[${money > 1000}]]></conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id='flow6' sourceRef='caiwu' targetRef='theEnd' />
+        <sequenceFlow id='flow7' sourceRef='jingli' targetRef='theEnd' />
+        <sequenceFlow id='flow8' sourceRef='zonjingli' targetRef='theEnd' />
+
+        <endEvent id="theEnd" />
+    </process>
+
+</definitions>

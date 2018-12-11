@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:;base64,=">
+    <title></title>
+</head>
+<body>
+<div>
+    <a  href="/pages/file.html" target="_blank">单个文件上传</a><hr>
+    <a  href="/pages/files.html" target="_blank">拖拽文件上传</a><hr>
+    文件名称：<input type="text" id="flowBpmnName"><button onclick="deploy()">发布工作流</button><hr>
+    流程key：<input type="text" id="processKey">businesskey：<input type="text" id="businessKey"><button onclick="start()">启动工作流</button><hr>
+    组名：<input type="text" id="group"><button onclick="queryTaskByGroup()">按组查询待办任务</button>
+    <div id="taskListForGroup">
+
+    </div>
+    <hr>
+</div>
+</body>
+</html>
+<script src="/js/jquery-1.11.3.min.js"></script>
+<script>
+    function deploy() {
+        var flowBpmnName = $("#flowBpmnName").val();
+        if(!flowBpmnName){
+            alert("请输入文件名");
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/workFlow/deploy',
+            data: {"flowBpmnName":flowBpmnName},
+            dataType: "json",
+            success: function(resp) {
+                alert(resp.message);
+            }
+        });
+    }
+    function start() {
+        var processKey = $("#processKey").val();
+        var businessKey = $("#businessKey").val();
+        if(!processKey){
+            alert("请输入processKey");
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/workFlow/startFlow',
+            data: {"processKey":processKey,"businessKey":businessKey},
+            dataType: "json",
+            success: function(resp) {
+                alert(resp.message);
+            }
+        });
+    }
+
+    function queryTaskByGroup() {
+        var group = $("#group").val();
+        if(!group){
+            alert("请输入group");
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/workFlow/queryTaskByGroup',
+            data: {"group":group},
+            dataType: "json",
+            success: function(resp) {
+                if(resp.code == 0){
+                    var data = resp.result;
+                    $("#taskListForGroup").text(JSON.stringify(data));
+                    console.log(resp.result);
+                }else{
+                    alert(resp.message);
+                }
+
+            }
+        });
+    }
+</script>

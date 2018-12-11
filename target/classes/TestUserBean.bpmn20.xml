@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<definitions id="definitions"
+             targetNamespace="http://activiti.org/bpmn20"
+             xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:activiti="http://activiti.org/bpmn">
+
+    <!-- 定义流程  id是必选的，用于启动工作流，name是选填，用来描述 -->
+    <process id="testUserBean" name="Monthly financial report reminder process">
+        <!-- 开始节点 -->
+        <startEvent id="theStart"/>
+        <!-- 线条，两个节点之间的连线，从sourceRef到targetRef-->
+        <sequenceFlow id="flow1" sourceRef="theStart" targetRef="theScriptTask"/>
+        <scriptTask id="theScriptTask" name="Execute script" scriptFormat="groovy">
+            <script>
+                <![CDATA[
+                import com.zzr.activity.user.JavaTaskScript
+                class GroovyScript {
+                    void say(String name){
+                        println("Hello, $name! ")
+                    }
+                    def foo(){
+                        JavaTaskScript javaTaskScript = new JavaTaskScript();
+                        javaTaskScript.scriptTaskWriteToConsole();
+                    }
+                    static void main(String[] args) {
+                        GroovyScript groovyScript = new GroovyScript();
+                        groovyScript.say("zzr")
+                        groovyScript.foo();
+                        }
+                }
+                def groovyScript = new GroovyScript();
+                groovyScript.say("zzr")
+                groovyScript.foo();
+                ]]></script>
+        </scriptTask>
+        <sequenceFlow id="flow2" sourceRef="theScriptTask" targetRef="writeReportTask"/>
+        <!-- 用户任务节点 -->
+        <userTask id="writeReportTask" name="Write monthly financial report"  activiti:candidateUsers="${userService.findAllUser()}"/>
+
+        <sequenceFlow id='flow3' sourceRef='writeReportTask' targetRef='verifyReportTask' />
+
+        <userTask id="verifyReportTask" name="Verify monthly financial report" activiti:candidateUsers="${userService.findAllUser()}"/>
+
+        <sequenceFlow id='flow4' sourceRef='verifyReportTask' targetRef='theEnd' />
+
+        <endEvent id="theEnd" />
+    </process>
+
+</definitions>
